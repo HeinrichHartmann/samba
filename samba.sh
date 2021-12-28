@@ -116,7 +116,7 @@ recycle() { local file=/etc/samba/smb.conf
 # Return: result
 share() { local share="$1" path="$2" browsable="${3:-yes}" ro="${4:-yes}" \
                 guest="${5:-yes}" users="${6:-""}" admins="${7:-""}" \
-                writelist="${8:-""}" comment="${9:-""}" file=/etc/samba/smb.conf
+                writelist="${8:-""}" comment="${9:-""}" opts="${10:-""}" file=/etc/samba/smb.conf
     sed -i "/\\[$share\\]/,/^\$/d" $file
     echo "[$share]" >>$file
     echo "   path = $path" >>$file
@@ -137,6 +137,8 @@ share() { local share="$1" path="$2" browsable="${3:-yes}" ro="${4:-yes}" \
         echo "   write list = $(tr ',' ' ' <<< $writelist)" >>$file
     [[ ${comment:-""} && ! ${comment:-""} =~ none ]] &&
         echo "   comment = $(tr ',' ' ' <<< $comment)" >>$file
+    [[ ${opts:-""} && ! ${opts:-""} =~ none ]] &&
+        echo "   $(tr ',' $'\n   ' <<< $opts)" >>$file
     echo "" >>$file
     [[ -d $path ]] || mkdir -p $path
 }
@@ -204,7 +206,7 @@ Options (fields in '[]' are optional, '<>' are required):
     -p          Set ownership and permissions on the shares
     -r          Disable recycle bin for shares
     -S          Disable SMB2 minimum version
-    -s \"<name;/path>[;browse;readonly;guest;users;admins;writelist;comment]\"
+    -s \"<name;/path>[;browse;readonly;guest;users;admins;writelist;comment;opts]\"
                 Configure a share
                 required arg: \"<name>;</path>\"
                 <name> is how it's called for clients
@@ -218,6 +220,7 @@ Options (fields in '[]' are optional, '<>' are required):
                 [admins] allowed default:'none' or list of admin users
                 [writelist] list of users that can write to a RO share
                 [comment] description of share
+                [opts] additional options
     -u \"<username;password>[;ID;group;GID]\"       Add a user
                 required arg: \"<username>;<passwd>\"
                 <username> for user
